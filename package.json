@@ -1,0 +1,10 @@
+{
+  "name": "raptor-rpc",
+  "version": "0.1.0",
+  "devDependencies": {
+    "mocha": "^1.18.2"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}
