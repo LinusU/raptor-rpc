@@ -63,6 +63,8 @@ Starts a server and accepts connections.
  - `type`: Which transport to use (`dgram`, `http`, `net`)
  - `port`: Which port to listen to
 
+Returns the server instance (`dgram.Socket`, `http.Server` or `net.Server`).
+
 ### Request
 
 #### `.id`
