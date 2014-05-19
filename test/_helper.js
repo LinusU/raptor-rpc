@@ -13,7 +13,12 @@ exports.app = function () {
 
   app.method('remote', function (req, cb) {
     cb(null, req.remote);
-  })
+  });
+
+  app.method('require-name', function (req, cb) {
+    req.require('name', 'string');
+    cb(null, req.param('name'));
+  });
 
   return app;
 };
@@ -52,19 +57,21 @@ exports.calls = function () {
   });
 
   ee.run = function (cb) {
-    var i = 4;
+    var i = 7;
     var tick = function () {
       (--i === 0) && cb();
       assert(i >= 0, 'Too many responses');
     };
 
     sm('ping', 123, function (obj) {
+      assert(obj.error);
       assert.equal(obj.error.code, -32600);
       assert.equal(obj.error.message, 'Invalid Request');
       tick();
     });
 
     sm('djaksl', function (obj) {
+      assert(obj.error);
       assert.equal(obj.error.code, -32601);
       assert.equal(obj.error.message, 'Method not found');
       tick();
@@ -78,6 +85,25 @@ exports.calls = function () {
     sm('remote', function (obj) {
       assert.equal(obj.result.type, remote.type);
       assert.equal(obj.result.port, remote.port);
+      tick();
+    });
+
+    sm('require-name', function (obj) {
+      assert(obj.error);
+      assert.equal(obj.error.code, -32602);
+      assert.equal(obj.error.message, 'InvalidParams: Missing required param name');
+      tick();
+    });
+
+    sm('require-name', { name: 1337 }, function (obj) {
+      assert(obj.error);
+      assert.equal(obj.error.code, -32602);
+      assert.equal(obj.error.message, 'InvalidParams: Param name should be of type string');
+      tick();
+    });
+
+    sm('require-name', { name: 'linus' }, function (obj) {
+      assert.equal(obj.result, 'linus');
       tick();
     });
 
