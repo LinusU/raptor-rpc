@@ -13,6 +13,7 @@ describe('app', function () {
           ee.emit('error', err);
         } else {
           var b = new Buffer(JSON.stringify(obj));
+          ee.emit('remote', { type: 'unknown', port: undefined });
           ee.emit('response', b);
         }
       });

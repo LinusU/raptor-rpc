@@ -22,6 +22,7 @@ describe('net', function () {
         });
 
         client.on('data', function (b) {
+          ee.emit('remote', { type: 'net', port: client.localPort });
           ee.emit('response', b);
         });
 

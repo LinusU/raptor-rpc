@@ -11,6 +11,10 @@ exports.app = function () {
     cb(null, 'pong');
   });
 
+  app.method('remote', function (req, cb) {
+    cb(null, req.remote);
+  })
+
   return app;
 };
 
@@ -42,8 +46,13 @@ exports.calls = function () {
     delete map[obj.id];
   });
 
+  var remote = null;
+  ee.on('remote', function (r) {
+    remote = r;
+  });
+
   ee.run = function (cb) {
-    var i = 3;
+    var i = 4;
     var tick = function () {
       (--i === 0) && cb();
       assert(i >= 0, 'Too many responses');
@@ -63,6 +72,12 @@ exports.calls = function () {
 
     sm('ping', function (obj) {
       assert.equal(obj.result, 'pong');
+      tick();
+    });
+
+    sm('remote', function (obj) {
+      assert.equal(obj.result.type, remote.type);
+      assert.equal(obj.result.port, remote.port);
       tick();
     });
 

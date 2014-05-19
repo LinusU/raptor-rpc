@@ -18,6 +18,7 @@ describe('dgram', function () {
     });
 
     client.on('message', function (msg, rinfo) {
+      ee.emit('remote', { type: 'dgram', port: 30100 });
       ee.emit('response', msg);
     });
 

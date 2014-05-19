@@ -17,6 +17,7 @@ describe('http', function () {
 
         var client = http.request({ port: 30103 }, function (res) {
           res.on('data', function (b) {
+            ee.emit('remote', { type: 'http', port: client.socket.localPort });
             ee.emit('response', b);
           });
         });
