@@ -86,6 +86,18 @@ Helper function to get a parameter or a default value if it wasn't provided.
  - `key`: Key to fetch, can be `Number` or `String`
  - `defValue`: Value to return if `key` wasn't provided, is `undefined` if not specified.
 
+#### `.source`
+
+The source of the connection, i.e. the stream that was piped to the connection.
+
+#### `.remote`
+
+Info about the other end of the connection. Includes three keys:
+
+ - `type`: Type of the transport (`unknown`, `dgram`, `http`, `net`)
+ - `address`: Ip address of the remote
+ - `port`: The remote port
+
 ## Transports
 
 ### Express
