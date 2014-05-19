@@ -86,6 +86,19 @@ Helper function to get a parameter or a default value if it wasn't provided.
  - `key`: Key to fetch, can be `Number` or `String`
  - `defValue`: Value to return if `key` wasn't provided, is `undefined` if not specified.
 
+#### `.require(key, type)`
+
+Helper function to require the presence a parameter and optionally check it's
+type. Will send an `Invalid params` error (-32602) back to the client, and stop
+execution, if the parameter is not present.
+
+ - `key`: Key to require, can be `Number` or `String`
+ - `type`: If specified, also require `typeof param` to equal this
+
+> This is implemented with `try` and `catch` so currently it only works inside
+> the main function, not in any asynchronous function. This could be fixed with
+> `domain` in the future.
+
 #### `.source`
 
 The source of the connection, i.e. the stream that was piped to the connection.
