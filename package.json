@@ -1,6 +1,9 @@
 {
   "name": "raptor-rpc",
   "version": "0.1.4",
+  "author": "Linus Unnebäck <linus@folkdatorn.se>",
+  "license": "MIT",
+  "repository": "git://github.com/LinusU/raptor-rpc",
   "devDependencies": {
     "mocha": "^1.18.2"
   },
