@@ -20,6 +20,11 @@ exports.app = function () {
     cb(null, req.param('name'));
   });
 
+  app.method('require-array', function (req, cb) {
+    req.require('names', 'array');
+    cb(null, req.param('names'));
+  });
+
   return app;
 };
 
@@ -57,7 +62,7 @@ exports.calls = function () {
   });
 
   ee.run = function (cb) {
-    var i = 7;
+    var i = 10;
     var tick = function () {
       (--i === 0) && cb();
       assert(i >= 0, 'Too many responses');
@@ -104,6 +109,27 @@ exports.calls = function () {
 
     sm('require-name', { name: 'linus' }, function (obj) {
       assert.equal(obj.result, 'linus');
+      tick();
+    });
+
+    sm('require-array', function (obj) {
+      assert(obj.error);
+      assert.equal(obj.error.code, -32602);
+      assert.equal(obj.error.message, 'InvalidParams: Missing required param names');
+      tick();
+    });
+
+    sm('require-array', { names: { a: 1 } }, function (obj) {
+      assert(obj.error);
+      assert.equal(obj.error.code, -32602);
+      assert.equal(obj.error.message, 'InvalidParams: Param names should be of type array');
+      tick();
+    });
+
+    sm('require-array', { names: ['linus', 'steve'] }, function (obj) {
+      assert(Array.isArray(obj.result));
+      assert.equal(obj.result[0], 'linus');
+      assert.equal(obj.result[1], 'steve');
       tick();
     });
 

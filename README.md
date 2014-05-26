@@ -93,7 +93,11 @@ type. Will send an `Invalid params` error (-32602) back to the client, and stop
 execution, if the parameter is not present.
 
  - `key`: Key to require, can be `Number` or `String`
- - `type`: If specified, also require `typeof param` to equal this
+ - `type`: If specified, also require the parameter to be of this type
+
+Valid values for `type` is specified in the
+[JSON Schema: core definitions and terminology](http://json-schema.org/latest/json-schema-core.html#anchor8)
+and [RFC 4627](http://tools.ietf.org/html/rfc4627).
 
 > This is implemented with `try` and `catch` so currently it only works inside
 > the main function, not in any asynchronous function. This could be fixed with
