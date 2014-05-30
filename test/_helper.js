@@ -54,11 +54,40 @@ exports.calls = function () {
 
     ee.emit('request', b);
   };
+  var smm = function (arr) {
+
+    var b = new Buffer(JSON.stringify(arr.map(function (e) {
+      if (typeof e[1] === 'function') {
+        e[2] = e[1]; e[1] = undefined;
+      }
+
+      var i = ++id;
+      map[i] = e[2];
+
+      return {
+        jsonrpc: '2.0',
+        id: i,
+        method: e[0],
+        params: e[1]
+      };
+
+    })));
+
+    ee.emit('request', b);
+  };
 
   ee.on('response', function (buf) {
     var obj = JSON.parse(buf.toString());
-    map[obj.id](obj);
-    delete map[obj.id];
+
+    if (!Array.isArray(obj)) {
+      obj = [obj];
+    }
+
+    obj.forEach(function (obj) {
+      map[obj.id](obj);
+      delete map[obj.id];
+    });
+
   });
 
   var remote = null;
@@ -141,7 +170,7 @@ exports.calls = function () {
 
     ];
 
-    var i = tests.length;
+    var i = tests.length * 2;
 
     tick = function () {
       (--i === 0) && cb();
@@ -152,6 +181,7 @@ exports.calls = function () {
       sm(e[0], e[1], e[2]);
     });
 
+    smm(tests);
 
   };
 
