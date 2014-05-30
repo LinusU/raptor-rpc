@@ -25,6 +25,11 @@ exports.app = function () {
     cb(null, req.param('names'));
   });
 
+  app.method('set-timeout', function (req, cb) {
+    req.require('ms', 'integer');
+    setTimeout(cb, req.param('ms'), null, 'pong');
+  });
+
   return app;
 };
 
@@ -62,76 +67,91 @@ exports.calls = function () {
   });
 
   ee.run = function (cb) {
-    var i = 10;
-    var tick = function () {
+    var tick, tests = [
+
+      ['ping', 123, function (obj) {
+        assert(obj.error);
+        assert.equal(obj.error.code, -32600);
+        assert.equal(obj.error.message, 'Invalid Request');
+        tick();
+      }],
+
+      ['djaksl', function (obj) {
+        assert(obj.error);
+        assert.equal(obj.error.code, -32601);
+        assert.equal(obj.error.message, 'Method not found');
+        tick();
+      }],
+
+      ['ping', function (obj) {
+        assert.equal(obj.result, 'pong');
+        tick();
+      }],
+
+      ['set-timeout', { ms: 30 }, function (obj) {
+        assert.equal(obj.result, 'pong');
+        tick();
+      }],
+
+      ['remote', function (obj) {
+        assert.equal(obj.result.type, remote.type);
+        assert.equal(obj.result.port, remote.port);
+        tick();
+      }],
+
+      ['require-name', function (obj) {
+        assert(obj.error);
+        assert.equal(obj.error.code, -32602);
+        assert.equal(obj.error.message, 'InvalidParams: Missing required param name');
+        tick();
+      }],
+
+      ['require-name', { name: 1337 }, function (obj) {
+        assert(obj.error);
+        assert.equal(obj.error.code, -32602);
+        assert.equal(obj.error.message, 'InvalidParams: Param name should be of type string');
+        tick();
+      }],
+
+      ['require-name', { name: 'linus' }, function (obj) {
+        assert.equal(obj.result, 'linus');
+        tick();
+      }],
+
+      ['require-array', function (obj) {
+        assert(obj.error);
+        assert.equal(obj.error.code, -32602);
+        assert.equal(obj.error.message, 'InvalidParams: Missing required param names');
+        tick();
+      }],
+
+      ['require-array', { names: { a: 1 } }, function (obj) {
+        assert(obj.error);
+        assert.equal(obj.error.code, -32602);
+        assert.equal(obj.error.message, 'InvalidParams: Param names should be of type array');
+        tick();
+      }],
+
+      ['require-array', { names: ['linus', 'steve'] }, function (obj) {
+        assert(Array.isArray(obj.result));
+        assert.equal(obj.result[0], 'linus');
+        assert.equal(obj.result[1], 'steve');
+        tick();
+      }]
+
+    ];
+
+    var i = tests.length;
+
+    tick = function () {
       (--i === 0) && cb();
       assert(i >= 0, 'Too many responses');
     };
 
-    sm('ping', 123, function (obj) {
-      assert(obj.error);
-      assert.equal(obj.error.code, -32600);
-      assert.equal(obj.error.message, 'Invalid Request');
-      tick();
+    tests.forEach(function (e) {
+      sm(e[0], e[1], e[2]);
     });
 
-    sm('djaksl', function (obj) {
-      assert(obj.error);
-      assert.equal(obj.error.code, -32601);
-      assert.equal(obj.error.message, 'Method not found');
-      tick();
-    });
-
-    sm('ping', function (obj) {
-      assert.equal(obj.result, 'pong');
-      tick();
-    });
-
-    sm('remote', function (obj) {
-      assert.equal(obj.result.type, remote.type);
-      assert.equal(obj.result.port, remote.port);
-      tick();
-    });
-
-    sm('require-name', function (obj) {
-      assert(obj.error);
-      assert.equal(obj.error.code, -32602);
-      assert.equal(obj.error.message, 'InvalidParams: Missing required param name');
-      tick();
-    });
-
-    sm('require-name', { name: 1337 }, function (obj) {
-      assert(obj.error);
-      assert.equal(obj.error.code, -32602);
-      assert.equal(obj.error.message, 'InvalidParams: Param name should be of type string');
-      tick();
-    });
-
-    sm('require-name', { name: 'linus' }, function (obj) {
-      assert.equal(obj.result, 'linus');
-      tick();
-    });
-
-    sm('require-array', function (obj) {
-      assert(obj.error);
-      assert.equal(obj.error.code, -32602);
-      assert.equal(obj.error.message, 'InvalidParams: Missing required param names');
-      tick();
-    });
-
-    sm('require-array', { names: { a: 1 } }, function (obj) {
-      assert(obj.error);
-      assert.equal(obj.error.code, -32602);
-      assert.equal(obj.error.message, 'InvalidParams: Param names should be of type array');
-      tick();
-    });
-
-    sm('require-array', { names: ['linus', 'steve'] }, function (obj) {
-      assert(Array.isArray(obj.result));
-      assert.equal(obj.result[0], 'linus');
-      assert.equal(obj.result[1], 'steve');
-      tick();
-    });
 
   };
 
