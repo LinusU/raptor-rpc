@@ -115,6 +115,15 @@ Info about the other end of the connection. Includes three keys:
  - `address`: Ip address of the remote
  - `port`: The remote port
 
+## Error handling
+
+If you pass an error to the provided callback in middleware or method, that
+error will be sent back to the client. The description will be `err.toString()`
+and the code `err.rpcCode`. If `rpcCode` is undefined the code sent will be 0.
+
+You can also include additional data by providing `err.rpcData`. `rpcData` can
+be of any type.
+
 ## Transports
 
 ### Express
