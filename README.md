@@ -90,7 +90,8 @@ Helper function to get a parameter or a default value if it wasn't provided.
 
 Helper function to require the presence a parameter and optionally check it's
 type. Will send an `Invalid params` error (-32602) back to the client, and stop
-execution, if the parameter is not present.
+execution, if the parameter is not present. It also returns the value of the
+parameter.
 
  - `key`: Key to require, can be `Number` or `String`
  - `type`: If specified, also require the parameter to be of this type

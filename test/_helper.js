@@ -30,6 +30,10 @@ exports.app = function () {
     setTimeout(cb, req.param('ms'), null, 'pong');
   });
 
+  app.method('require-return', function (req, cb) {
+    cb(null, req.require('value', 'string'));
+  });
+
   return app;
 };
 
@@ -165,6 +169,11 @@ exports.calls = function () {
         assert(Array.isArray(obj.result));
         assert.equal(obj.result[0], 'linus');
         assert.equal(obj.result[1], 'steve');
+        tick();
+      }],
+
+      ['require-return', { value: 'ABC' }, function (obj) {
+        assert.equal(obj.result, 'ABC');
         tick();
       }]
 
