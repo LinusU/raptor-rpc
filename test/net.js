@@ -2,38 +2,38 @@
 var net = require('net');
 var helper = require('./_helper');
 
+var PORT = 30102;
+
 describe('net', function () {
-  it('should handle requests', function (done) {
 
-    var app = helper.app();
-    var ee = helper.calls();
+  var app = helper.app();
+  var ee = helper.calls();
+  var server = net.createServer({ allowHalfOpen: true });
 
-    var server = net.createServer({ allowHalfOpen: true });
-    app.attach(server);
+  ee.on('request', function (b) {
 
-    server.listen(30102, function () {
+    var client = new net.Socket({ allowHalfOpen: true });
 
-      ee.on('request', function (b) {
+    client.connect(PORT, function () {
+      client.end(b);
+    });
 
-        var client = new net.Socket({ allowHalfOpen: true });
-
-        client.connect(30102, function () {
-          client.end(b);
-        });
-
-        client.on('data', function (b) {
-          ee.emit('remote', { type: 'net', port: client.localPort });
-          ee.emit('response', b);
-        });
-
-      });
-
-      ee.run(function () {
-        server.close();
-        done();
-      });
-
+    client.on('data', function (b) {
+      ee.emit('remote', { type: 'net', port: client.localPort });
+      ee.emit('response', b);
     });
 
   });
+
+  before(function (done) {
+    app.attach(server);
+    server.listen(PORT, done);
+  });
+
+  ee.registerTests();
+
+  after(function (done) {
+    server.close(done);
+  });
+
 });

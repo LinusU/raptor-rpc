@@ -2,31 +2,40 @@
 var dgram = require('dgram');
 var helper = require('./_helper');
 
+var PORT_CLIENT = 30100;
+var PORT_SERVER = 30101;
+
 describe('dgram', function () {
-  it('should handle requests', function (done) {
 
-    var app = helper.app();
-    var ee = helper.calls();
+  var app = helper.app();
+  var ee = helper.calls();
 
-    var client = dgram.createSocket('udp4');
-    var server = dgram.createSocket('udp4');
+  var client = dgram.createSocket('udp4');
+  var server = dgram.createSocket('udp4');
 
+  ee.on('request', function (b) {
+    client.send(b, 0, b.length, PORT_SERVER, 'localhost');
+  });
+
+  client.on('message', function (msg, rinfo) {
+    ee.emit('remote', { type: 'dgram', port: PORT_CLIENT });
+    ee.emit('response', msg);
+  });
+
+  before(function (done) {
     app.attach(server);
 
-    ee.on('request', function (b) {
-      client.send(b, 0, b.length, 30101, 'localhost');
-    });
-
-    client.on('message', function (msg, rinfo) {
-      ee.emit('remote', { type: 'dgram', port: 30100 });
-      ee.emit('response', msg);
-    });
-
-    client.bind(30100, function () {
-      server.bind(30101, function () {
-        ee.run(done);
-      });
+    client.bind(PORT_CLIENT, function () {
+      server.bind(PORT_SERVER, done);
     });
 
   });
+
+  ee.registerTests();
+
+  after(function () {
+    client.close();
+    server.close();
+  });
+
 });
