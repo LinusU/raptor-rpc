@@ -5,9 +5,10 @@
   "license": "MIT",
   "repository": "git://github.com/LinusU/raptor-rpc",
   "devDependencies": {
-    "mocha": "^3.0.2"
+    "mocha": "^3.0.2",
+    "standard": "^8.0.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "standard && mocha"
   }
 }
