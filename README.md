@@ -1,4 +1,3 @@
-
 # Raptor RPC
 
 Raptor RPC is a transport-agnostic RPC server with middleware support and an
@@ -11,20 +10,20 @@ also with some popular frameworks.
 ## Installation
 
 ```sh
-npm install raptor-rpc
+npm install --save raptor-rpc
 ```
 
 ## Usage
 
 ```js
-var Raptor = require('raptor-rpc');
-var raptor = new Raptor;
+const Raptor = require('raptor-rpc')
+const raptor = new Raptor()
 
 raptor.method('ping', function (req, cb) {
-  cb(null, 'pong');
-});
+  cb(null, 'pong')
+})
 
-raptor.serve('http', 1337);
+raptor.serve('http', 1337)
 ```
 
 ## API
@@ -130,18 +129,18 @@ be of any type.
 ### Express
 
 ```js
-var app = express();
-var raptor = new Raptor;
+const app = express()
+const raptor = new Raptor()
 
-app.use('/api', raptor.handle);
-app.listen(1337);
+app.use('/api', raptor.handle)
+app.listen(1337)
 ```
 
 ### Dgram
 
 ```js
-var raptor = new Raptor;
-var socket = dgram.createSocket('udp4');
+const raptor = new Raptor()
+const socket = dgram.createSocket('udp4')
 
 raptor.attach(socket);
 socket.bind(1337);
@@ -150,8 +149,8 @@ socket.bind(1337);
 ### Net
 
 ```js
-var raptor = new Raptor;
-var server = net.createServer({ allowHalfOpen: true });
+const raptor = new Raptor()
+const server = net.createServer({ allowHalfOpen: true })
 
 raptor.attach(server);
 server.listen(1337);
@@ -160,8 +159,8 @@ server.listen(1337);
 ### Http
 
 ```js
-var raptor = new Raptor;
-var server = http.createServer();
+const raptor = new Raptor()
+const server = http.createServer()
 
 raptor.attach(server);
 server.listen(1337);
