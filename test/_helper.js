@@ -1,37 +1,48 @@
 /* eslint-env mocha */
 
 var Raptor = require('../')
+
 var assert = require('assert')
 var EventEmitter = require('events').EventEmitter
 
 exports.app = function () {
   var app = new Raptor()
 
-  app.method('ping', function (req, cb) {
-    cb(null, 'pong')
+  app.method('ping', function (req) {
+    return 'pong'
   })
 
-  app.method('remote', function (req, cb) {
-    cb(null, req.remote)
+  app.method('remote', function (req) {
+    return req.remote
   })
 
-  app.method('require-name', function (req, cb) {
+  app.method('require-name', function (req) {
     req.require('name', 'string')
-    cb(null, req.param('name'))
+    return req.param('name')
   })
 
-  app.method('require-array', function (req, cb) {
+  app.method('require-array', function (req) {
     req.require('names', 'array')
-    cb(null, req.param('names'))
+    return req.param('names')
   })
 
-  app.method('set-timeout', function (req, cb) {
+  app.method('set-timeout', function (req) {
     req.require('ms', 'integer')
-    setTimeout(cb, req.param('ms'), null, 'pong')
+
+    return new Promise(function (resolve) {
+      setTimeout(resolve, req.param('ms'), 'pong')
+    })
   })
 
-  app.method('require-return', function (req, cb) {
-    cb(null, req.require('value', 'string'))
+  app.method('require-return', function (req) {
+    return req.require('value', 'string')
+  })
+
+  app.method('throw', function (req) {
+    var err = new Error('Test')
+    err.rpcCode = 1337
+    err.rpcData = { a: 1 }
+    throw err
   })
 
   return app
@@ -96,7 +107,7 @@ exports.calls = function () {
     remote = r
   })
 
-  ee.registerTests = function (cb) {
+  ee.registerTests = function () {
     var tests = [
       ['ping', 123, function (obj) {
         assert(obj.error)
@@ -159,6 +170,13 @@ exports.calls = function () {
 
       ['require-return', { value: 'ABC' }, function (obj) {
         assert.equal(obj.result, 'ABC')
+      }],
+
+      ['throw', {}, function (obj) {
+        assert(obj.error)
+        assert.equal(obj.error.code, 1337)
+        assert.equal(obj.error.message, 'Error: Test')
+        assert.deepEqual(obj.error.data, { a: 1 })
       }]
     ]
 

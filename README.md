@@ -16,14 +16,36 @@ npm install --save raptor-rpc
 ## Usage
 
 ```js
+// Raptor library
 const Raptor = require('raptor-rpc')
-const raptor = new Raptor()
 
-raptor.method('ping', function (req, cb) {
-  cb(null, 'pong')
+// Example libraries
+const fetch = require('node-fetch')
+const readJsonFile = require('read-json-file')
+
+const app = new Raptor()
+
+app.use(function (req, next) {
+  console.log('Incoming request!')
+  return next()
 })
 
-raptor.serve('http', 1337)
+app.method('ping', function (req) {
+  return 'pong'
+})
+
+app.method('get-package-name', function (req) {
+  return readJsonFile('package.json')
+    .then(pkg => pkg.name)
+})
+
+app.method('random-name', function (req) {
+  return fetch('http://uinames.com/api/')
+    .then(res => res.json())
+    .then(body => `${body.name} ${body.surname}`)
+})
+
+app.serve('http', 1337)
 ```
 
 ## API
@@ -34,14 +56,22 @@ raptor.serve('http', 1337)
 
 Add middleware to the server.
 
- - `fn`: Middleware function that takes `req` and `cb`
+ - `fn`: Middleware function with the signature `(req, next)`
+
+The middleware function should return a promise of a response. Calling `next`
+will return a promise of the next middleware or, if no other middleware exists,
+the method handler.
 
 #### `.method(name, fn)`
 
 Register a method with the server.
 
  - `name`: The method name
- - `fn`: Method function, takes `req` and `cb`
+ - `fn`: Method handler with the signature `(req)`
+
+The method handler should return a promise of what to respond with. It's also
+acceptable to return the value right away, since the handler is wrapped in a
+`.then` call. This also means that any errors thrown will be caught correctly.
 
 #### `.handle(...)`
 
