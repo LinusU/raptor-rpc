@@ -3,7 +3,7 @@
   "version": "0.2.3",
   "author": "Linus Unnebäck <linus@folkdatorn.se>",
   "license": "MIT",
-  "repository": "git://github.com/LinusU/raptor-rpc",
+  "repository": "LinusU/raptor-rpc",
   "devDependencies": {
     "mocha": "^3.0.2",
     "standard": "^8.0.0"
