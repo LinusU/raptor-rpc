@@ -1,36 +1,56 @@
 /* eslint-env mocha */
 
 var http = require('http')
-var helper = require('./_helper')
+var assert = require('assert')
+var createApp = require('./_app')
+var requests = require('./_requests')
+var getStream = require('get-stream')
 
 var PORT = 30103
 
 describe('http', function () {
-  var app = helper.app()
-  var ee = helper.calls()
-  var server = http.createServer()
+  var app, id, server, localPort
 
-  ee.on('request', function (b) {
-    var client = http.request({ port: PORT }, function (res) {
-      res.on('data', function (b) {
-        ee.emit('remote', { type: 'http', port: client.socket.localPort })
-        ee.emit('response', b)
+  function send (obj) {
+    return new Promise(function (resolve) {
+      var client = http.request({ port: PORT }, function (res) {
+        localPort = client.socket.localPort
+
+        resolve(getStream(res).then(function (string) {
+          return JSON.parse(string)
+        }))
       })
-    })
 
-    client.setHeader('Content-Length', b.length)
-    client.write(b)
-    client.end()
-  })
+      var buf = new Buffer(JSON.stringify(obj))
+      client.setHeader('Content-Length', buf.length)
+      client.end(buf)
+    })
+  }
 
   before(function (done) {
-    app.attach(server)
-    server.listen(PORT, done)
+    id = 0
+    app = createApp()
+    server = app.serve('http', PORT, done)
   })
-
-  ee.registerTests()
 
   after(function (done) {
     server.close(done)
+  })
+
+  requests.forEach(function (request) {
+    it('should handle ' + request[0], function () {
+      var obj = { jsonrpc: '2.0', method: request[0], params: request[1], id: id++ }
+
+      return send(obj).then(request[2])
+    })
+  })
+
+  it('should give remote information', function () {
+    var obj = { jsonrpc: '2.0', method: 'remote', id: id++ }
+
+    return send(obj).then(function (res) {
+      assert.equal(res.result.type, 'http')
+      assert.equal(res.result.port, localPort)
+    })
   })
 })

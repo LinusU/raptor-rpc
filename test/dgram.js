@@ -1,39 +1,64 @@
 /* eslint-env mocha */
 
 var dgram = require('dgram')
-var helper = require('./_helper')
+var assert = require('assert')
+var createApp = require('./_app')
+var requests = require('./_requests')
 
 var PORT_CLIENT = 30100
 var PORT_SERVER = 30101
 
 describe('dgram', function () {
-  var app = helper.app()
-  var ee = helper.calls()
+  var app, id, server, client
 
-  var client = dgram.createSocket('udp4')
-  var server = dgram.createSocket('udp4')
+  function send (obj) {
+    return new Promise(function (resolve) {
+      client.once('message', function (msg) {
+        resolve(JSON.parse(msg.toString()))
+      })
 
-  ee.on('request', function (b) {
-    client.send(b, 0, b.length, PORT_SERVER, 'localhost')
-  })
+      var buf = new Buffer(JSON.stringify(obj))
+      client.send(buf, 0, buf.length, PORT_SERVER, 'localhost')
+    })
+  }
 
-  client.on('message', function (msg, rinfo) {
-    ee.emit('remote', { type: 'dgram', port: PORT_CLIENT })
-    ee.emit('response', msg)
-  })
+  before(function () {
+    id = 0
+    app = createApp()
 
-  before(function (done) {
+    server = dgram.createSocket('udp4')
+    client = dgram.createSocket('udp4')
+
     app.attach(server)
 
-    client.bind(PORT_CLIENT, function () {
-      server.bind(PORT_SERVER, done)
+    return Promise.all([
+      new Promise(function (resolve) { server.bind(PORT_SERVER, resolve) }),
+      new Promise(function (resolve) { client.bind(PORT_CLIENT, resolve) })
+    ])
+  })
+
+  after(function () {
+    return Promise.all([
+      /* Node.js 0.12 doesn't support `.close(callback)` */
+      new Promise(function (resolve) { server.on('close', resolve); server.close() }),
+      new Promise(function (resolve) { client.on('close', resolve); client.close() })
+    ])
+  })
+
+  requests.forEach(function (request) {
+    it('should handle ' + request[0], function () {
+      var obj = { jsonrpc: '2.0', method: request[0], params: request[1], id: id++ }
+
+      return send(obj).then(request[2])
     })
   })
 
-  ee.registerTests()
+  it('should give remote information', function () {
+    var obj = { jsonrpc: '2.0', method: 'remote', id: id++ }
 
-  after(function () {
-    client.close()
-    server.close()
+    return send(obj).then(function (res) {
+      assert.equal(res.result.type, 'dgram')
+      assert.equal(res.result.port, PORT_CLIENT)
+    })
   })
 })
