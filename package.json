@@ -6,9 +6,15 @@
   "repository": "LinusU/raptor-rpc",
   "devDependencies": {
     "mocha": "^3.0.2",
-    "standard": "^8.0.0"
+    "standard": "^8.1.0"
   },
   "scripts": {
     "test": "standard && mocha"
+  },
+  "dependencies": {
+    "debug": "^2.2.0",
+    "get-stream": "^2.3.1",
+    "has-own-property": "^1.0.0",
+    "is-my-json-valid": "^2.14.0"
   }
 }
