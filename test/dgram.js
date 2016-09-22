@@ -13,12 +13,16 @@ describe('dgram', function () {
 
   function send (obj) {
     return new Promise(function (resolve) {
-      client.once('message', function (msg) {
-        resolve(JSON.parse(msg.toString()))
-      })
+      if (obj.id !== undefined) {
+        client.once('message', function (msg) {
+          resolve(JSON.parse(msg.toString()))
+        })
+      }
 
       var buf = new Buffer(JSON.stringify(obj))
       client.send(buf, 0, buf.length, PORT_SERVER, 'localhost')
+
+      if (obj.id === undefined) resolve(null)
     })
   }
 
@@ -50,6 +54,14 @@ describe('dgram', function () {
       var obj = { jsonrpc: '2.0', method: request[0], params: request[1], id: id++ }
 
       return send(obj).then(request[2])
+    })
+  })
+
+  it('should handle notifications', function () {
+    var obj = { jsonrpc: '2.0', method: 'ping' }
+
+    return send(obj).then(function (res) {
+      assert.equal(res, null)
     })
   })
 
