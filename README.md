@@ -58,7 +58,7 @@ app.serve('http', 1337, function () {
 
 Add middleware to the server.
 
- - `fn`: Middleware function with the signature `(req, next)`
+ - `fn`: Middleware function with the signature `(req, next) => Promise`
 
 The middleware function should return a promise of a response. Calling `next`
 will return a promise of the next middleware or, if no other middleware exists,
@@ -69,7 +69,7 @@ the method handler.
 Register a method with the server.
 
  - `name`: The method name
- - `fn`: Method handler with the signature `(req)`
+ - `fn`: Method handler with the signature `(req) => Promise`
 
 The method handler should return a promise of what to respond with. It's also
 acceptable to return the value right away, since the handler is wrapped in a
@@ -132,9 +132,8 @@ Valid values for `type` is specified in the
 [JSON Schema: core definitions and terminology](http://json-schema.org/latest/json-schema-core.html#anchor8)
 and [RFC 4627](http://tools.ietf.org/html/rfc4627).
 
-> This is implemented with `try` and `catch` so currently it only works inside
-> the main function, not in any asynchronous function. This could be fixed with
-> `domain` in the future.
+> This is implemented by throwing an Error if the key isn't present, or is of
+> the wrong type.
 
 #### `.source`
 
@@ -150,9 +149,9 @@ Info about the other end of the connection. Includes three keys:
 
 ## Error handling
 
-If you pass an error to the provided callback in middleware or method, that
-error will be sent back to the client. The description will be `err.toString()`
-and the code `err.rpcCode`. If `rpcCode` is undefined the code sent will be 0.
+If you reject within a middleware or a method handler, that error will be sent
+back to the client. The description will be `err.toString()` and the code
+`err.rpcCode`. If `rpcCode` is undefined the code sent will be `0`.
 
 You can also include additional data by providing `err.rpcData`. `rpcData` can
 be of any type.
@@ -165,7 +164,7 @@ be of any type.
 const app = express()
 const raptor = new Raptor()
 
-app.use('/api', raptor.handle)
+app.post('/api', raptor.handle)
 app.listen(1337)
 ```
 
@@ -201,7 +200,5 @@ server.listen(1337);
 
 ## License
 
-```text
-Copyright (c) 2014 Linus Unnebäck
+Copyright &copy; 2014 Linus Unnebäck <br>
 Licensed under the MIT License (MIT)
-```
