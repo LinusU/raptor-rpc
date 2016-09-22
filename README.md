@@ -45,7 +45,9 @@ app.method('random-name', function (req) {
     .then(body => `${body.name} ${body.surname}`)
 })
 
-app.serve('http', 1337)
+app.serve('http', 1337, function () {
+  console.log('Listening on http://localhost:1337/')
+})
 ```
 
 ## API
@@ -85,12 +87,13 @@ Attaches Raptor to the server, accepts a number of different parameters.
 
 Read more under `Transports`.
 
-#### `.serve(type, port)`
+#### `.serve(type, port[, cb])`
 
 Starts a server and accepts connections.
 
  - `type`: Which transport to use (`dgram`, `http`, `net`)
  - `port`: Which port to listen to
+ - `cb`: Function to be called when accepting connections
 
 Returns the server instance (`dgram.Socket`, `http.Server` or `net.Server`).
 
