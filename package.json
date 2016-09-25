@@ -19,5 +19,16 @@
   },
   "engines": {
     "node": ">= 0.12"
-  }
+  },
+  "keywords": [
+    "json-rpc",
+    "json-rpc2",
+    "json",
+    "jsonrpc-2.0",
+    "jsonrpc",
+    "jsonrpc2",
+    "rpc",
+    "rpc2",
+    "server"
+  ]
 }
