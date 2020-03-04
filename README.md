@@ -99,6 +99,21 @@ Returns the server instance (`dgram.Socket`, `http.Server` or `net.Server`).
 
 ### Request
 
+At a minimum, a request (in this case, calling the `ping` method) will look like this.
+```
+{"jsonrpc": "2.0", "id": 1, "method":"ping"}
+```
+For example, if you leave out the `jsonrpc` field (when creating your request) you will get an error like the one shown below.
+```
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "error": {
+        "code": -32600,
+        "message": "Invalid Request"
+    }
+}
+```
 #### `.id`
 
 The jsonrpc id of the request, can be `undefined`. This variable is read-only.
